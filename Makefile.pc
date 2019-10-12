@@ -1,0 +1,24 @@
+CC = cc
+CFLAGS = -Wall -DTEL_DEBUG_DEMO_ON
+
+SOURCES = $(wildcard *.c)
+HEADERS = $(wildcard *.h)
+
+OBJFILES = $(SOURCES:%.c=%.o)
+
+all: telnetd
+
+telnetd: $(OBJFILES)
+	cc -o $@ $^ -lpthread -lm
+
+%.o: %.c $(HEADERS)
+	cc $(CFLAGS) -c $<
+cscope:
+	find ./ -name "*.[chxsS]" -print  > cscope.files
+	cscope -bq -i cscope.files
+
+clean:
+	rm -rf *~ *.o telnetd cscope*
+	rm -rf doc/*.tex
+
+.PHONY: clean all 

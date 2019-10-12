@@ -1,3 +1,4 @@
 /*.o
 *~
 /telnetd
+/version.c

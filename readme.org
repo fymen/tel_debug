@@ -6,11 +6,13 @@
 #+keywords:
 #+subtitle:
 #+latex_compiler: pdflatex
-#+date: \today
+#+date: <2019-09-20 五>
 
 * What is tel_debug?
 It is a library offer a framework that allow you to do runtime debug on your C/C++ program.
+
 You can get any program info or even change them runtime.
+
 It based on telnet, and very easy to use.
 
 * Try or debug tel_debug on PC
@@ -23,6 +25,12 @@ Startup the server:
 #+begin_src bash
 ./telnetd
 #+end_src
+
+Try connect the server:
+#+begin_src bash
+telnet 127.0.0.0 8888
+#+end_src
+[[file:demo.png]]
 
 You shall find the defined port in file server.c, and update the port as you wish:
 #+begin_src C
@@ -40,8 +48,7 @@ int main(void)
 }
 #+end_src
 * For Cross compiling or Integrated to a real project
-Get your Cross Compile environment ready by =source= the script your Cross tool provider provided.
-And then just:
+Get your Cross Compile environment ready, and then just:
 #+begin_src bash
 make
 #+end_src

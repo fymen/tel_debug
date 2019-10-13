@@ -97,6 +97,7 @@ void prompt_login(void)
     tel_print("2.a single command or arg is limited to %d bytes\n", ARG_MAX_LEN);
     tel_print("3.support up to %d args\n", ARG_MAX_NO-1);
     tel_print("4.the usage buffer is limited to %d bytes\n", USAGE_MAX_LEN);
+    tel_print("5.print \"help\" to get a help list\n");
     tel_print("###########################################\n");
 }
 
@@ -398,6 +399,8 @@ void zin(void)
 int main(void)
 {
     int port = 8888;
+
+    printf("Try connect the server by: telnet 127.0.0.1 %d\n", port);
 
     TEL_PRT("begin telnet on port %d\n",port);
     tel_init(port);

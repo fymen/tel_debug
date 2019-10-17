@@ -53,8 +53,11 @@ typedef unsigned short u16;
 
 #define ETHREAD 11
 
-
+#ifdef TEL_DEBUG_DEMO_ON
+#define debug_flag 1
+#else
 #define debug_flag 0
+#endif
 
 #define TEL_PRT(fmt, args...) {if (debug_flag) {fprintf(stdout, "tel: "); fprintf(stdout, fmt, ## args);}}
 #define TEL_ERR(fmt, args...) {if (debug_flag) {fprintf(stderr, "tel_err: "); fprintf(stderr, fmt, ## args);}}

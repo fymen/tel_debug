@@ -77,5 +77,5 @@ int cmd_init(void)
 }
 int cmd_exit(void)
 {
-    return 0;
+    return EOK;
 }

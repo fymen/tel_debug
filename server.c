@@ -96,7 +96,7 @@ void prompt_login(void)
     tel_print("1.support up to %d commands\n", SUPPORT_CMD_NO-2);
     tel_print("2.a single command or arg is limited to %d bytes\n", ARG_MAX_LEN);
     tel_print("3.support up to %d args\n", ARG_MAX_NO-1);
-    tel_print("4.the usage buffer is limited to %d bytes\n", USAGE_MAX_LEN);
+    tel_print("4.the buffer for usage discribtion is limited to %d bytes\n", USAGE_MAX_LEN);
     tel_print("5.print \"help\" to get a help list\n");
     tel_print("###########################################\n");
 }
@@ -173,12 +173,12 @@ int parse_cmd(s8 *str)
     func = cmd_find(&tmp_cmd);
     if (!func){
 	tel_print("Do not support cmd: %s\n", str);
-	return -1;
+	return -EARG;
     }
     ret = func(darg[0], darg[1], darg[2], darg[3]);
     tel_print("\nret=%d\n", ret);
 
-    return 0;
+    return EOK;
 }
 
 /* Telnet Server recvive thread */
@@ -226,7 +226,7 @@ static void telnetd_rcv(void)
 	    tel_print("\b \b");
 	    break;
 	case RETURN_CHAR:
-//	    tel_print("\n");
+	    /* tel_print("\n"); */
 	    if (i > 0){
 		parse_cmd(cmd_line);
 		memset(cmd_line, '\0', sizeof(cmd_line));
@@ -306,10 +306,10 @@ int tel_reg(s8 *cmd, void *func,  s8 *usage)
 int tel_init(s32 port)
 {
     static int tel_init_flag = 0;
-    if(1 == tel_init_flag){
-	return 0;
+    if(TRUE == tel_init_flag){
+	return EOK;
     }
-    tel_init_flag = 1;
+    tel_init_flag = FALSE;
 
     cmd_init();
     
@@ -318,9 +318,8 @@ int tel_init(s32 port)
     
     thread_data.telnetd_enable = TRUE;
     pthread_mutex_init(&print_mutex, NULL);
-    telnetd_create(port);
-
-    return 0;
+    
+    return telnetd_create(port);
 }
 void tel_exit(void)
 {
@@ -398,25 +397,29 @@ void zin(void)
 }
 int main(void)
 {
+    int ret = EOK;
     int port = 8888;
 
-    printf("Try connect the server by: telnet 127.0.0.1 %d\n", port);
+    TEL_PRT("Start telnetd on port %d, you may connect it by:  telnet 127.0.0.1 %d\n", port, port);
 
-    TEL_PRT("begin telnet on port %d\n",port);
-    tel_init(port);
-
+    ret = tel_init(port);
+    if (ret != EOK) {
+        TEL_ERR("tel_init with error No.: %d\n", ret);
+        return ret;
+    }
+        
     tel_reg("zin", (void *)zin, "test...");
     tel_reg("zout", (void *)zin, "test...");
     tel_reg("ztest", (void *)zin, "test...");
-    tel_reg("zn", (void *)zin, "test...");
-    tel_reg("zon", (void *)zin, "test...");
-    
+
+    /* Just a demo, no exit provided, feel free to kill it by "C-c" */
     while (1){
 	usleep(1000*1000);
     }
     
     TEL_PRT("telnet closed\n");
+    tel_exit();
 
-    return 0;
+    return EOK;
 }
 #endif

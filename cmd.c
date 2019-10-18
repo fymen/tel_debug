@@ -16,7 +16,7 @@ CallBack cmd_find(Command *pcmd)
     for(i=0;i<SUPPORT_CMD_NO;i++){
     	if ((pcmd->len == cmd_info[i].command.len) &&
     	    (!strncmp(pcmd->cmd, cmd_info[i].command.cmd, pcmd->len))){
-    	    return cmd_info[i].func;
+            return cmd_info[i].func;
     	}
     }
 
@@ -28,9 +28,20 @@ int cmd_reg(s8 *cmd, void *func,  s8 *usage)
     int i;
     Command tmp_cmd;
 
+    if (func == NULL) {
+        TEL_ERR("%s: reg func is NULL!\n", __FUNCTION__);
+        return -EARG;
+    }
+        
+    if (strlen(cmd) > ARG_MAX_LEN) {
+        TEL_ERR("%s: cmd %s should not longer than ARG_MAX_LEN!\n", __FUNCTION__, cmd);
+        return -EARG;
+    }
+    
     memset(&tmp_cmd, 0, sizeof(tmp_cmd));
 
     tmp_cmd.len = strlen(cmd);
+
     strncpy(tmp_cmd.cmd, cmd, tmp_cmd.len);
     for (i=0;i<SUPPORT_CMD_NO;i++){
 	if (cmd_info[i].command.len == tmp_cmd.len){
@@ -49,12 +60,12 @@ int cmd_reg(s8 *cmd, void *func,  s8 *usage)
 	    break;
 	}
     }
-    if (i >= ARG_MAX_NO){
-	TEL_ERR("%s: too many args..\n", __FUNCTION__);
+    if (i >= SUPPORT_CMD_NO){
+	TEL_ERR("%s: %s register failed, only support %d commands!\n", __FUNCTION__, cmd, SUPPORT_CMD_NO);
 	return -ECMD_REG_FULL;
     }
     
-    return 0;
+    return EOK;
 }
 
 int cmd_usage(int index, s8 *pcmd, s8 *usage)
@@ -64,7 +75,7 @@ int cmd_usage(int index, s8 *pcmd, s8 *usage)
 	if (cmd_info[index].command.len > 0){
 	    strncpy(pcmd, cmd_info[index].command.cmd, cmd_info[index].command.len);
 	    strncpy(usage, cmd_info[index].usage, USAGE_MAX_LEN);
-	    return 0;
+	    return EOK;
 	}
     }
     return -ECMD_NOT_EXIST;

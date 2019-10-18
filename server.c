@@ -95,7 +95,7 @@ void prompt_login(void)
     tel_print("CAUTION:\n");
     tel_print("1.support up to %d commands\n", SUPPORT_CMD_NO-2);
     tel_print("2.a single command or arg is limited to %d bytes\n", ARG_MAX_LEN);
-    tel_print("3.support up to %d args\n", ARG_MAX_NO-1);
+    tel_print("3.support up to %d args\n", ARG_MAX_NO);
     tel_print("4.the buffer for usage discribtion is limited to %d bytes\n", USAGE_MAX_LEN);
     tel_print("5.print \"help\" to get a help list\n");
     tel_print("###########################################\n");
@@ -116,8 +116,8 @@ int parse_cmd(s8 *str)
 {
     s8 *p;
     Command tmp_cmd;
-    s8 arg[ARG_MAX_NO - 1][ARG_MAX_LEN];
-    s32 darg[ARG_MAX_NO - 1] = {0};
+    s8 arg[ARG_MAX_NO][ARG_MAX_LEN];
+    s32 darg[ARG_MAX_NO] = {0};
     s32 i, j;
 
     int ret = 0;
@@ -140,9 +140,9 @@ int parse_cmd(s8 *str)
     tmp_cmd.len = j;
     j = 0;
     p = swallow_space(p);
-
+    
     /* extract the args */
-    while ((*p != '\0') && (i < ARG_MAX_NO - 1)){
+    while ((*p != '\0') && (i < ARG_MAX_NO)){
 	if (*p == ' '){
 	    p = swallow_space(p);
 	    if (*p == '\0')
@@ -160,8 +160,14 @@ int parse_cmd(s8 *str)
 	
     }
 
+    if (i >= (ARG_MAX_NO)) {
+        tel_print("command line \"%s\" has arguments more than %d\n", str, ARG_MAX_NO);
+
+        return -EARG;
+    }
+
     /* transform the args to digital format */
-    for (j=0;j <= i;j++){
+    for (j=0;j<=i;j++){
 	if ((arg[j][1] == 'x') || (arg[j][1] == 'X')) /* hex number */
 	    darg[j] = strtol(arg[j], NULL, 0);
 	else
@@ -172,7 +178,7 @@ int parse_cmd(s8 *str)
     CallBack func;
     func = cmd_find(&tmp_cmd);
     if (!func){
-	tel_print("Do not support cmd: %s\n", str);
+	tel_print("Do not support command line: %s\n", str);
 	return -EARG;
     }
     ret = func(darg[0], darg[1], darg[2], darg[3]);
@@ -400,17 +406,21 @@ int main(void)
     int ret = EOK;
     int port = 8888;
 
-    TEL_PRT("Start telnetd on port %d, you may connect it by:  telnet 127.0.0.1 %d\n", port, port);
-
     ret = tel_init(port);
     if (ret != EOK) {
         TEL_ERR("tel_init with error No.: %d\n", ret);
         return ret;
     }
+    
+    TEL_PRT("telnetd server started, you may connect it by:  telnet 127.0.0.1 %d\n", port);
         
     tel_reg("zin", (void *)zin, "test...");
     tel_reg("zout", (void *)zin, "test...");
-    tel_reg("ztest", (void *)zin, "test...");
+    tel_reg("zin", (void *)zin, "test...");
+    tel_reg("zo", (void *)zin, "test...");
+    tel_reg("zi", (void *)zin, "test...");
+    tel_reg("zt", (void *)zin, "test...");
+    tel_reg("znnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn", (void *)zin, "test...");
 
     /* Just a demo, no exit provided, feel free to kill it by "C-c" */
     while (1){
